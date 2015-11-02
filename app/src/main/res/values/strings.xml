@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">ProjectSunshine</string>
+    <string name="ejemplo_setText">Porqué tenemos que hacer una app del tiempo? ¬¬</string>
+    <string name="ejemplo_nuevaActivity">Click para nueva Activity</string>
+    <string name="ejemplo_boton_nuevaActividad">New Activity</string>
+    <string name="ejemplo_bigAndroid_toast">Soy enorme</string>
 </resources>

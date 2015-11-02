@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ejemplo_setText">Porqué tenemos que hacer una app del tiempo? ¬¬</string>
+    <string name="ejemplo_bigAndroid_toast">Soy enorme</string>
+</resources>
