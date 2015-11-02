@@ -44,8 +44,10 @@ public class MainActivity extends AppCompatActivity {
         dec_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                stringArrayList.remove(stringArrayList.size()-1);
-                adapter.notifyItemRemoved(stringArrayList.size());
+                if (stringArrayList.size()>0) {
+                    stringArrayList.remove(stringArrayList.size() - 1);
+                    adapter.notifyItemRemoved(stringArrayList.size());
+                }
             }
         });
 
