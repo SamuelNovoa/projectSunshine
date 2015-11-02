@@ -3,9 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+
+    <include layout="@layout/add_dec_buttons_layout"
+        android:id="@+id/add_dec_layout"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        />
+
     <android.support.v7.widget.RecyclerView
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/main_activity_recyclerView"
+        android:layout_above="@id/add_dec_layout"
         />
+
 </RelativeLayout>
