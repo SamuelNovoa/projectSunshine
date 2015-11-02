@@ -48,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
                     stringArrayList.remove(stringArrayList.size() - 1);
                     adapter.notifyItemRemoved(stringArrayList.size());
                 }
+                else {
+                    Toast.makeText(MainActivity.this,"No quedan items", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
