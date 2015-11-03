@@ -1,26 +1,50 @@
 package com.clubandroiduvigo.projectsunshine;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String ID_KEY = "id";
+    private static final String API_KEY = "APPID";
     //Hacemos esta variable global ya que va a ser la que tengamos que avisar cuando haya algún cambio
     private GeneralForecastAdapter adapter;
 
     private ArrayList<String> stringArrayList;
+
+    private final String APPID = "43070a922fe7ec2f792ece8cb9292d8f";
+    private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/city";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,29 +56,60 @@ public class MainActivity extends AppCompatActivity {
         adapter = new GeneralForecastAdapter();
         recyclerView.setAdapter(adapter);
 
-        Button add_button = (Button) findViewById(R.id.add_one_button);
-        Button dec_button = (Button) findViewById(R.id.dec_one_button);
-        add_button.setOnClickListener(new View.OnClickListener() {
+        Button refresh_button = (Button) findViewById(R.id.refresh_button);
+        refresh_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                stringArrayList.add(Integer.toString(stringArrayList.size()));
-                adapter.notifyItemInserted(stringArrayList.size());
-            }
-        });
-        dec_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (stringArrayList.size()>0) {
-                    stringArrayList.remove(stringArrayList.size() - 1);
-                    adapter.notifyItemRemoved(stringArrayList.size());
+                GetForecastTask forecastTask = new GetForecastTask();
+                Uri uri = Uri.parse(BASE_URL)
+                        .buildUpon()
+                        .appendQueryParameter(ID_KEY,"94043")
+                        .appendQueryParameter(API_KEY,APPID)
+                        .build();
+                URL url = null;
+                try {
+                    url = new URL(uri.toString());
+                    forecastTask.execute(url);
+                } catch (MalformedURLException e) {
+                    Log.e("MainActivity","onClick - Problema con Uri: "+uri.toString());
+                    e.printStackTrace();
                 }
-                else {
-                    Toast.makeText(MainActivity.this,"No quedan items", Toast.LENGTH_SHORT).show();
-                }
+
             }
         });
 
         stringArrayList = new ArrayList<>(Arrays.asList("0","1","2","3","4","5"));
+    }
+
+    private class GetForecastTask extends AsyncTask<URL,Void,JSONObject>{ //AsyncTask Parameters -> <doInBackground,Progress,Result>
+        @Override
+        protected JSONObject doInBackground(URL... params) {
+            for (int i=0;i<params.length;i++){
+                try {
+                    HttpURLConnection connection = (HttpURLConnection) params[i].openConnection();
+                    connection.connect();
+                    if (connection.getResponseCode()!= 200){ //Si no es code OK, miramos que pasa
+                        // TODO: 3/11/15  Connection code != 200
+                    }
+                    else { //Si es code OK, actualizamos la informacion
+                        InputStream inputStream = connection.getInputStream();
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                        StringBuilder stringBuilder = new StringBuilder();
+                        String line;
+                        while ((line = bufferedReader.readLine())!=null){ //Mientras queden lineas, continua añadiendo al stringBuilder
+                            stringBuilder.append(line);
+                        }
+                        String result = stringBuilder.toString();
+                        Log.d("GetForecastTask", "doInBackground - Result = " + result);
+                    }
+
+                } catch (IOException e) {
+                    Log.e("GetForecastTask","doInBackground - Problema con la conexion: "+e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
     }
 
     private class GeneralForecastAdapter extends RecyclerView.Adapter<GeneralForecastAdapter.ViewHolder>{
@@ -94,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
             //aqui "inflaremos" los layout en funcion del tipo
             View view = null;
             if (viewType == GENERIC_TYPE){ //Ahora mismo, siempre sera de este tipo
-                view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.generic_recycler_view_layout,parent,false);
+                view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.forecast_recycler_view_layout,parent,false);
             }
             return new ViewHolder(view,viewType);
         }

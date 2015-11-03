@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ProjectSunshine</string>
+    <string name="refresh_button_text">Refresh</string>
 </resources>

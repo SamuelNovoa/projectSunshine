@@ -2,20 +2,22 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/background_ligh">
 
-    <include layout="@layout/add_dec_buttons_layout"
-        android:id="@+id/add_dec_layout"
+    <Button
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_alignParentBottom="true"
-        />
+        android:text="@string/refresh_button_text"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:id="@+id/refresh_button"/>
 
     <android.support.v7.widget.RecyclerView
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/main_activity_recyclerView"
-        android:layout_above="@id/add_dec_layout"
+        android:layout_below="@id/refresh_button"
         />
 
 </RelativeLayout>
