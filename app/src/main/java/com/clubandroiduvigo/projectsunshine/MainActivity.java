@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,26 +23,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String ID_KEY = "id";
+    private static final String Q_KEY = "q";
     private static final String API_KEY = "APPID";
+    private static final String COUNT_KEY = "cnt";
+    private static final String UNITS_KEY = "units";
+    private static final String LANG_KEY = "lang";
     //Hacemos esta variable global ya que va a ser la que tengamos que avisar cuando haya algún cambio
     private GeneralForecastAdapter adapter;
 
     private ArrayList<String> stringArrayList;
 
     private final String APPID = "43070a922fe7ec2f792ece8cb9292d8f";
-    private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/city";
+    private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily";
 
 
     @Override
@@ -63,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
                 GetForecastTask forecastTask = new GetForecastTask();
                 Uri uri = Uri.parse(BASE_URL)
                         .buildUpon()
-                        .appendQueryParameter(ID_KEY,"524901")
-                        .appendQueryParameter(API_KEY,APPID)
+                        .appendQueryParameter(Q_KEY,"Vigo,ES")
+                        .appendQueryParameter(COUNT_KEY,"7")
+                        .appendQueryParameter(API_KEY, APPID)
+                        .appendQueryParameter(UNITS_KEY,"metric")
+                        .appendQueryParameter(LANG_KEY,"es")
                         .build();
                 URL url;
                 try {
