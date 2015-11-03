@@ -15,6 +15,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     //Hacemos esta variable global ya que va a ser la que tengamos que avisar cuando haya algún cambio
     private GeneralForecastAdapter adapter;
 
-    private ArrayList<String> stringArrayList;
+    private JSONArray forecastJSONArray;
 
     private final String APPID = "43070a922fe7ec2f792ece8cb9292d8f";
     private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily";
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
                         .appendQueryParameter(UNITS_KEY,"metric")
                         .appendQueryParameter(LANG_KEY,"es")
                         .build();
+                Log.d("MainActivity","onClick - URL: "+uri.toString());
                 URL url;
                 try {
                     url = new URL(uri.toString());
@@ -78,12 +81,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        stringArrayList = new ArrayList<>(Arrays.asList("0","1","2","3","4","5"));
+        forecastJSONArray = new JSONArray();
     }
 
     private class GetForecastTask extends AsyncTask<URL,Void,JSONObject>{ //AsyncTask Parameters -> <doInBackground,Progress,Result>
         @Override
         protected JSONObject doInBackground(URL... params) {
+            JSONObject result_json = null;
             for (int i=0;i<params.length;i++){
                 try {
                     HttpURLConnection connection = (HttpURLConnection) params[i].openConnection();
@@ -100,15 +104,38 @@ public class MainActivity extends AppCompatActivity {
                             stringBuilder.append(line);
                         }
                         String result = stringBuilder.toString();
+                        result_json = new JSONObject(result);
                         Log.d("GetForecastTask", "doInBackground - Result = " + result);
                     }
 
                 } catch (IOException e) {
                     Log.e("GetForecastTask","doInBackground - Problema con la conexion: "+e.getMessage());
                     e.printStackTrace();
+                } catch (JSONException e) {
+                    Log.e("GetForecastTask", "doInBackground - Fallo del servidor: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
-            return null;
+            return result_json; //En nuestro caso, solo hay una url a procesar. Aun asi, lo hacemos asi para mostrar un caso generico
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject jsonObject) {
+            try {
+                if (!jsonObject.getString("cod").equals("200")){
+                    // TODO: 3/11/15 {"cod":"404","message":"Error: Not found city"} reaccionar ante error
+                }
+                else { //cod == 200
+                    forecastJSONArray = jsonObject.getJSONArray("list");
+                    //Detalle: Esto es cambiar el layout. SOLO SE PUEDE HACER EN PRE O POST EXECUTE, ya que estas funciones
+                    //son ejecutadas desde el MainThread. Si intentaramos cambiar la pantalla desde doInBackground, la app
+                    //rompe
+                    adapter.notifyDataSetChanged();
+                }
+            } catch (JSONException e) {
+                Log.e("GetForecastTask","onPostExecute - Error al procesar el resultado: "+e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -135,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return stringArrayList.size();
+            return forecastJSONArray.length();
         }
 
         @Override
@@ -157,15 +184,27 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(ViewHolder holder, final int position) {
             //aqui cambiaremos el comportamiento de cada parte en funcion de su posicion
-            if (holder.viewType == GENERIC_TYPE){
-                holder.generic_textView.setText(stringArrayList.get(position)); //position = 0 es ADD_MORE_TYPE
-                holder.generic_layout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(MainActivity.this, stringArrayList.get(position), Toast.LENGTH_SHORT).show();
-                    }
-                });
+            try {
+                final JSONObject actual_forecast = forecastJSONArray.getJSONObject(position);
+                if (holder.viewType == GENERIC_TYPE){
+                    holder.generic_textView.setText(actual_forecast.getString("dt"));
+                    holder.generic_layout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                Toast.makeText(MainActivity.this, actual_forecast.getString("dt"), Toast.LENGTH_SHORT).show();
+                            } catch (JSONException e) {
+                                Log.e("GeneralForecastAdapter","onClick - "+e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            } catch (JSONException e) {
+                Log.e("GeneralForecastAdapter","onBindViewHolder - "+e.getMessage());
+                e.printStackTrace();
             }
+
         }
     }
 }
