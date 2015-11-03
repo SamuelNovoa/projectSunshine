@@ -2,12 +2,15 @@ package com.clubandroiduvigo.projectsunshine;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final String APPID = "43070a922fe7ec2f792ece8cb9292d8f";
     private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily";
+    private SwipeRefreshLayout refreshLayout;
 
 
     @Override
@@ -55,10 +59,10 @@ public class MainActivity extends AppCompatActivity {
         adapter = new GeneralForecastAdapter();
         recyclerView.setAdapter(adapter);
 
-        Button refresh_button = (Button) findViewById(R.id.refresh_button);
-        refresh_button.setOnClickListener(new View.OnClickListener() {
+        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onClick(View v) {
+            public void onRefresh() {
                 GetForecastTask forecastTask = new GetForecastTask();
                 Uri uri = Uri.parse(BASE_URL)
                         .buildUpon()
@@ -68,21 +72,41 @@ public class MainActivity extends AppCompatActivity {
                         .appendQueryParameter(UNITS_KEY,"metric")
                         .appendQueryParameter(LANG_KEY,"es")
                         .build();
-                Log.d("MainActivity","onClick - URL: "+uri.toString());
                 URL url;
                 try {
                     url = new URL(uri.toString());
                     forecastTask.execute(url);
                 } catch (MalformedURLException e) {
-                    Log.e("MainActivity","onClick - Problema con Uri: "+uri.toString());
+                    Log.e("MainActivity","initialize - Problema con Uri: "+e.getMessage());
                     e.printStackTrace();
                 }
-
             }
         });
 
-        forecastJSONArray = new JSONArray();
+        initialize();
     }
+
+    private void initialize() { //Metodo para inicializar la actividad
+        forecastJSONArray = new JSONArray();
+        GetForecastTask forecastTask = new GetForecastTask();
+        Uri uri = Uri.parse(BASE_URL)
+                .buildUpon()
+                .appendQueryParameter(Q_KEY,"Vigo,ES")
+                .appendQueryParameter(COUNT_KEY,"7")
+                .appendQueryParameter(API_KEY, APPID)
+                .appendQueryParameter(UNITS_KEY,"metric")
+                .appendQueryParameter(LANG_KEY,"es")
+                .build();
+        URL url;
+        try {
+            url = new URL(uri.toString());
+            forecastTask.execute(url);
+        } catch (MalformedURLException e) {
+            Log.e("MainActivity","initialize - Problema con Uri: "+e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
     private class GetForecastTask extends AsyncTask<URL,Void,JSONObject>{ //AsyncTask Parameters -> <doInBackground,Progress,Result>
         @Override
@@ -126,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
                     // TODO: 3/11/15 {"cod":"404","message":"Error: Not found city"} reaccionar ante error
                 }
                 else { //cod == 200
+                    refreshLayout.setRefreshing(false);
                     forecastJSONArray = jsonObject.getJSONArray("list");
                     //Detalle: Esto es cambiar el layout. SOLO SE PUEDE HACER EN PRE O POST EXECUTE, ya que estas funciones
                     //son ejecutadas desde el MainThread. Si intentaramos cambiar la pantalla desde doInBackground, la app
@@ -206,5 +231,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu,menu);
+        return true;
     }
 }

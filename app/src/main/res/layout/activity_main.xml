@@ -5,19 +5,16 @@
     tools:context=".MainActivity"
     android:background="@color/background_ligh">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/refresh_button_text"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="10dp"
-        android:id="@+id/refresh_button"/>
-
-    <android.support.v7.widget.RecyclerView
+    <android.support.v4.widget.SwipeRefreshLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:id="@+id/main_activity_recyclerView"
-        android:layout_below="@id/refresh_button"
-        />
+        android:id="@+id/refresh_layout"
+        >
+        <android.support.v7.widget.RecyclerView
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:id="@+id/main_activity_recyclerView"
+            />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>
