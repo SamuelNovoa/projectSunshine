@@ -63,10 +63,10 @@ public class MainActivity extends AppCompatActivity {
                 GetForecastTask forecastTask = new GetForecastTask();
                 Uri uri = Uri.parse(BASE_URL)
                         .buildUpon()
-                        .appendQueryParameter(ID_KEY,"94043")
+                        .appendQueryParameter(ID_KEY,"524901")
                         .appendQueryParameter(API_KEY,APPID)
                         .build();
-                URL url = null;
+                URL url;
                 try {
                     url = new URL(uri.toString());
                     forecastTask.execute(url);
